@@ -1,0 +1,157 @@
+{% extends 'layout_seller.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'CSS/seller_style.css' %}">
+{% endblock %}
+{% block content %}
+
+    <!-- 店铺头部 -->
+    <header class="shop-header">
+        <div class="shop-title">
+            <div>
+                <h1 class="shop-name">{{ shop.store_name }}</h1>
+                <span class="shop-category">{{ shop.get_label_display }}</span>
+            </div>
+            <div class="action-bar">
+                <button class="btn btn-primary" id="btnAdd">
+                    ＋ 发布新品
+                </button>
+            </div>
+        </div>
+        <div class="seller-profile">
+            <p>店主：{{ shop.seller_name }} |
+                📍山东省&nbsp青岛市&nbsp崂山区&nbsp松岭路238号&nbsp中国海洋大学&nbsp崂山校区&nbsp爱特工作室</p>
+            <p>该店主暂无备注</p>
+        </div>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="content-container">
+        <!-- 商品展示 -->
+        <section class="product-section">
+            <h2>发布的商品（{{ products|length }}）</h2>
+            <div class="product-grid">
+                {% for product in products %}
+                    <a href="/commodity/{{ product.id }}/manage/" class="product-card">
+                        <img src="{{ MEDIA_URL }}{{ product.photo }}" alt="{{ product.name }}" class="product-image">
+                        <div class="product-info">
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <div class="product-price">¥{{ product.price }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- 订单查看 -->
+        <section class="order-section">
+            <h2>历史订单</h2>
+            <div class="order-list">
+                {% for order in orders %}
+                    <div class="order-item">
+                        <div>
+                            <div>订单号：{{ order.oid }}</div>
+                            {% if order.process_state == 1 %}
+                                <div class="order-status status-shipped">
+                                    {{ order.get_process_state_display }}
+                                </div>
+                            {% elif order.process_state == 2 %}
+                                <div class="order-status status-pending">
+                                    {{ order.get_process_state_display }}
+                                </div>
+                            {% elif order.process_state == 3 %}
+                                <div class="order-status status-completed">
+                                    {{ order.get_process_state_display }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="order-amount">¥{{ order.price }}</div>
+                            <button class="btn btn-primary"
+                                    onclick="location.href='/order/{{ order.id }}/deal/'"
+                                    style="margin-top:8px;padding:4px 12px;font-size:12px;">
+                                处理订单
+                            </button>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>暂无近期订单</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">发布新品</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="formAdd">
+                        <div class="clearfix">
+                            {% for field in form %}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>{{ field.label }}</label>
+                                        {{ field }}
+                                        <span class="error-message" style="color: red"></span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                    <button id="btnSave" type="button" class="btn btn-info">保 存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            bindBtnAddEvent();
+            bindBtnSaveEvent();
+        })
+
+        function bindBtnAddEvent() {
+            $("#btnAdd").click(function () {
+                //点击按钮显示对话框
+                $('#myModal').modal('show');
+            });
+        }
+
+
+        function bindBtnSaveEvent() {
+            $("#btnSave").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                //清除错误信息
+                $(".error-message").empty();
+                //向后台发送请求
+                $.ajax({
+                    url: "/add/commodity/",
+                    type: "post",
+                    data: $("#formAdd").serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            alert("发布新品成功！");
+                            window.location.href = path;
+                        } else {
+                            $.each(res.error, function (name, errorList) {
+                                $("#id_" + name).next().text(errorList[0]);
+                                {#拼接#}
+                            })
+                        }
+                    }
+                })
+            });
+        }
+    </script>
+{% endblock %}

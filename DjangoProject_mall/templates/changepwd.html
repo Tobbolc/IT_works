@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    <style>
+        .account {
+            width: 400px;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            box-shadow: 5px 5px 20px #aaa;
+
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 100px;
+            padding: 20px 40px;
+        }
+
+        .account h2 {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .account .btn-box .btn01 {
+            color: #2b5c93;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 80px;
+            float: right;
+        }
+
+        .account .btn-box .btn02 {
+            color: #2b5c93;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 100px;
+            float: left;
+        }
+
+        .account .btn-box > a:hover {
+            color: white;
+        }
+
+        .account .btn-box {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h2>修改密码</h2>
+    <form method="post" novalidate="novalidate">
+        {% csrf_token %}
+        <p style=" margin-top: 35px">
+            请输入您的旧密码</p>
+        <div class="form-group">
+            <label for="id_code">旧密码</label>
+            <div class="row">
+                <div class="col-xs-12">
+                    {{ form.password_old }}
+                    <span style="color: red">{{ form.password_old.errors.0 }}</span>
+                </div>
+            </div>
+        </div>
+        <p style=" margin-top: 35px">
+            请在下方输入您的新密码</p>
+        <div class="form-group">
+            <label for="id_code">新密码</label>
+            <div class="row">
+                <div class="col-xs-12">
+                    {{ form.password_new }}
+                    <span style="color: red">{{ form.password_new.errors.0 }}</span>
+                </div>
+            </div>
+        </div>
+        <input type="submit" value="更 改" class="btn btn-primary" style="margin-left: 120px">
+    </form>
+</div>
+
+<script src="{% static 'JS/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+
+
+</body>
+</html>

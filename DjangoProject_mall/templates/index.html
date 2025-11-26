@@ -1,0 +1,90 @@
+{% extends 'layout_0.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'CSS/style.css' %}"> <!-- 引入外部 CSS 文件 -->
+    <style>
+        .card {
+            border: 1px solid #ccc; /* 添加外边框 */
+            margin-bottom: 20px; /* 卡片之间的间隔 */
+            box-shadow: 5px 5px 20px #aaa; /* 添加阴影效果 */
+            border-radius: 10px;
+        }
+
+        .card-body {
+            padding: 15px; /* 增加卡片内部的填充 */
+        }
+
+        .card-title {
+            font-weight: bold; /* 标题加粗 */
+            color: #333; /* 标题颜色 */
+        }
+
+        .card-text {
+            color: #666; /* 文本颜色 */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div style="margin: 50px auto ; width: 700px; height: 70px">
+            <form method="get">
+                <div class="input-group">
+
+                    <input type="text" name="q" class="form-control" placeholder="请输入关键字..."
+                           value="{{ search }}">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">
+                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                </div><!-- /input-group -->
+            </form>
+        </div>
+        <h1 style="font-weight: bold;">
+            <h1>今日推荐</h1>
+        </h1>
+
+        <div class="product-grid">
+            {% for datum in queryset %}
+                    <a data-toggle="modal" data-target="#myModal" class="product-card" aria-label="查看商品详情">
+                        <div class="card-image">
+                            <img src="{{ MEDIA_URL }}{{ datum.photo }}" alt="商品图">
+                        </div>
+                        <div class="card-info">
+                            <h3 class="product-title">
+                                {{ datum.name }}{{ datum.name }}{{ datum.name }}{{ datum.name }}{{ datum.name }}{{ datum.name }}</h3>
+                            <div class="price-section">
+                                <span class="current-price">¥{{ datum.price }}</span>
+                                <span class="original-price">¥{{ datum.price_b }}</span>
+                            </div>
+                        </div>
+                    </a>
+            {% endfor %}
+        </div>
+        <div class="clearfix">
+            <ul class="pagination">
+                {{ page_string }}
+            </ul>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">页面提示</h4>
+                    </div>
+                    <div class="modal-body">
+                        您还未登录,无法下单或收藏
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

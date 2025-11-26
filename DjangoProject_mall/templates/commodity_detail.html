@@ -1,0 +1,202 @@
+{% extends 'layout_buyer.html' %}
+{% load static %}
+{% block css %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'CSS/product_detail_style.css' %}"> <!-- 引入外部 CSS 文件 -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <!-- 商品主区域 -->
+
+        <div class="product-main">
+            <!-- 图片轮播 -->
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <img src="{{ MEDIA_URL }}{{ datum.photo }}" alt="商品主图">
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <!-- 商品信息 -->
+            <div class="product-info">
+                <h1 class="product-title">
+                    {{ datum.name }}{{ datum.name }}{{ datum.name }}{{ datum.name }}{{ datum.name }}</h1>
+                <div class="price-section">
+                    <span class="current-price">¥{{ datum.price }}</span>
+                    <span class="original-price">¥{{ datum.price_b }}</span>
+                    <div class="promotion-tags">
+                        <span class="tag">优惠条件1</span>
+                        <span class="tag">优惠条件2</span>
+                    </div>
+                </div>
+
+                <!-- 商品参数 -->
+                <div class="specs">
+                    <div class="spec-item">
+                        <span>类型标签：</span>
+                        <strong>{{ datum.get_label_display }}</strong>
+                    </div>
+                    <div class="spec-item">
+                        <span>商家：</span>
+                        <a class="btn btn-link" href="/store/{{ datum.label }}/buyer/">{{ datum.store }}</a>
+                    </div>
+                    <div class="spec-item">
+                        <span>库存：</span>
+                        <strong class="stock">{{ datum.stock }}</strong>
+                    </div>
+                </div>
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    {% if datum.stock %}
+                        {% if datum.cart_state == 1 %} <!-- 未加入购物车 -->
+                            <button class="btn btn-cart" id="btnCart">加入购物车</button>
+                            <a class="btn btn-buy" href="/commodity/{{ datum.id }}/order/">立即购买</a>
+                        {% else %} <!-- 已加入购物车 -->
+                            <button class="btn btn-cart" disabled>已加入购物车</button>
+                            <a class="btn btn-buy" href="/commodity/{{ datum.id }}/order/">立即购买</a>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-cart" disabled>暂时缺货</button>
+                        <button class="btn btn-buy" disabled>等待补货</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品详情 -->
+        <div class="product-detail">
+            <h2 class="detail-title">商品详情</h2>
+            <div class="rich-text">
+                <!-- 富文本内容 -->
+                <p>{{ datum.detail|safe }}</p>
+            </div>
+            <div class="comment_post">      {# 提交评论区域的div #}
+                <h3 id="commentform_title">发表评论</h3>
+                <textarea rows="10" cols="60" id="comment_content"></textarea>
+                <p>
+                    <button class="btn btn-info" style="padding: 10px">提交评论</button>
+                </p>
+            </div>
+
+            <div class="comment_show">      {# 评论展示区域的div #}
+                <h3 class="feedback_area_title">评论列表</h3>
+                <div class="comment_list">
+                    {% for comment in comment_list %}    {# 循环展示评论的数据 #}
+                        <div>
+                            {% if comment.buyer_id == None %}
+                                <p>第{{ forloop.counter }}楼 -> By:{{ comment.seller.store_name }}
+                                    -> {{ comment.created_at }} ->
+                                    <button class="reply" style="padding: 5px; color: #5bc0de"
+                                            store_name={{ comment.seller.store_name }} pk={{ comment.pk }}>回复
+                                    </button>
+                                </p>
+                            {% else %}
+                                <p>第{{ forloop.counter }}楼 -> By:{{ comment.buyer.username }}
+                                    -> {{ comment.created_at }} ->
+                                    {% if comment.buyer.username == request.session.info_buyer.username %} {# 对于本人只能删除 #}
+                                        <a href="/comment/{{ comment.id }}/delete/" style="padding: 5px; color: darkred">删除</a>
+                                    {% else %}
+                                        {% if comment.seller_id != None %} {# 给卖家回复 #}
+                                            <button class="reply" style="padding: 5px; color: #5bc0de"
+                                                    name={{ comment.seller.store_name }} pk={{ comment.pk }}>回复
+                                            </button>
+                                        {% else %}
+                                            <button class="reply" style="padding: 5px; color: #5bc0de"
+                                                    name={{ comment.buyer.username }} pk={{ comment.pk }}>回复
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                            {# 在此处定义一个回复按钮，用户实现子评论,并且自定义属性username和pk，用于下面回复功能的实现 #}
+                            {% if comment.parent_id %}   {# 判断评论是否有父级评论 #}
+                                <p id="p">原评论内容：{{ comment.parent.content }}</p>
+                                {# 如果有父级评论，则在中间显示父级评论的评论内容 #}
+                            {% endif %}
+                            <p>评论内容：{{ comment.content }}</p>
+                            <hr>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+{% block js %}
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script type="text/javascript">
+
+        $(function () {
+            bindBtnCartEvent();
+            bindBtnDelEvent();
+        })
+
+        function bindBtnCartEvent() {
+            $("#btnCart").click(function () {
+                // 从 URL 中提取商品 ID
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const productId = path.split('/')[2]; // 提取商品 ID（假设 URL 格式为 /commodity/42/detail/）
+                // 发送 Ajax 请求
+                $.ajax({
+                    url: '/add/cart/',
+                    method: 'POST',
+                    data: {
+                        product_id: productId, // 传递商品 ID
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert("添加成功！您可以在购物车里查看");
+                            window.location.href = path;
+                        }
+                    },
+                })
+            });
+        }
+
+
+        var pid = ""
+        {# 设置一个变量pid默认为空，用于后面作为数据库存储的父级评论的ID，如果没有父级评论则为空，子评论有父级评论 #}
+        {# 提交评论按钮的点击事件 #}
+        $(".comment_post p button").click(function () {
+            $.ajax({
+                url: '/comment/manage/',
+                type: 'post',
+                data: {
+                    comment_content: $("#comment_content").val(), {# 提交的数据内容data #}
+                    commodity_id: {{ datum.id }},
+                    pid: pid
+                },
+                success: function (res) {            {# 本例中返回的数据仅仅用于在控制台打印而已 #}
+                    console.log(res)
+                    {# 控制台打印返回的数据 #}
+                    $("#comment_content").val("")
+                    {# 提交完成后，清空评论输入框的内容 #}
+                    pid = ""
+                    {# 子评论提交完成后，将pid默认设置为空，恢复为默认的父评论 #}
+
+                }
+            })
+        })
+
+
+        {# 回复按钮的点击事件 #}
+        $(".reply").click(function () {
+            $("#comment_content").focus()
+            {# 回复按钮的事件，点击时，将光标聚集到评论输入框中 #}
+            var val = "@" + $(this).attr("name") + "\n"
+            {# $(this)指代".reply"标签本身，获取这个标签的username值 #}
+            $("#comment_content").val(val)
+            {# 回复时，自动在输入框加入：@要回复的人 #}
+            pid = $(this).attr("pk")
+            {# 当点击回复时，父评论ID不再为空，此时修改为：对应评论的主键值ID #}
+        })
+        {# 删除按钮的点击事件 #}
+
+
+    </script>
+{% endblock %}

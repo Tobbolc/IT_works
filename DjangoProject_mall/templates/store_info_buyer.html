@@ -1,0 +1,159 @@
+{% extends 'layout_buyer.html' %}
+{% load static %}
+{% block css %}
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* 店铺信息头部 */
+        .shop-header {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .shop-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .shop-name {
+            font-size: 32px;
+            margin: 0;
+            color: #1a1a1a;
+        }
+
+        .shop-category {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* 商品容器 */
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            gap: 30px;
+        }
+
+        /* 商品展示区 */
+        .product-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+
+        /* 商品卡片 */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-price {
+            color: #e53935;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .content-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .shop-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+{% block content %}
+
+    <!-- 店铺头部 -->
+    <header class="shop-header">
+        <div class="shop-title">
+            <div>
+                <h1 class="shop-name">{{ shop.store_name }}</h1>
+                <span class="shop-category">{{ shop.get_label_display }}</span>
+            </div>
+        </div>
+        <div class="seller-profile">
+            <p>店主：{{ shop.seller_name }} |
+                📍山东省&nbsp青岛市&nbsp崂山区&nbsp松岭路238号&nbsp中国海洋大学&nbsp崂山校区&nbsp爱特工作室</p>
+            <p>该店主暂无备注</p>
+        </div>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="content-container">
+        <!-- 商品展示 -->
+        <section class="product-section">
+            <h2>发布的商品（{{ products|length }}）</h2>
+            <div class="product-grid">
+                {% for product in products %}
+                    <a href="/commodity/{{ product.id }}/detail/" class="product-card">
+                        <img src="{{ MEDIA_URL }}{{ product.photo }}" alt="{{ product.name }}" class="product-image">
+                        <div class="product-info">
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <div class="product-price">¥{{ product.price }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+{% endblock %}

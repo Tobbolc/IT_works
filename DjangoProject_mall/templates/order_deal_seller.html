@@ -1,0 +1,122 @@
+{% extends 'layout_seller.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'CSS/order_deal_seller.css' %}"> <!-- 引入外部 CSS 文件 -->
+{% endblock %}
+{% block content %}
+    <div class="order-container">
+        <!-- 订单头信息 -->
+        <div class="order-header">
+            <h1 class="order-number">订单号：{{ order.oid }}</h1>
+            <div class="order-meta">
+                <div>创建时间：{{ order.created_at }}</div>
+                {% if state == 1 %}
+                    <div>状态：<span class="status-tag status-processing">未处理</span></div>
+                {% elif state == 2 %}
+                    <div>状态：<span class="status-tag status-refused">已拒绝</span></div>
+                {% elif state == 3 %}
+                    <div>状态：<span class="status-tag status-completed">已通过</span></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <table class="order-items">
+            <thead>
+            <tr>
+                <th>商品信息</th>
+                <th>单价</th>
+                <th>数量</th>
+                <th>小计</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr data-product-id="{{ commodity.id }}">
+                    <td data-label="商品信息">
+                        <img src="{{ MEDIA_URL }}{{ commodity.photo }}" class="product-image" alt="{{ commodity.name }}">
+                        <span class="product-name">{{ commodity.name }}</span>
+                    </td>
+                    <td data-label="单价">¥{{ commodity.price }}</td>
+                    <td data-label="数量">
+                        <div class="quantity-wrapper">
+                            <input type="number" class="quantity-input"
+                                   value="{{ order.quantity }}" readonly>
+                        </div>
+                    </td>
+                    <td data-label="小计" class="subtotal">¥{{ order.price }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 金额汇总 -->
+        <div class="total-section">
+            <div class="total-amount">总金额：¥{{ order.price }}</div>
+        </div>
+        <!--操作按钮-->
+        <div class="action-buttons">
+            {% if state == 1 %}
+                <button class="btn btn-secondary" id="btnRef">拒 绝</button>
+                <button class="btn btn-primary" id="btnAcc">同 意</button>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            bindBtnRefEvent();
+            bindBtnAccEvent();
+        })
+
+        function bindBtnAccEvent() {
+            $("#btnAcc").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const orderId = path.split('/')[2];
+                const quantity = $('.quantity-input').val(); //获取商品数量
+                const tap = 1 //代表同意
+                const url = `/order/${orderId}/deal/`;
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: {
+                        quantity: quantity,
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('您已通过该订单！');
+                            window.location.href = path;
+                        }
+                    }
+                });
+            })
+        }
+
+        function bindBtnRefEvent() {
+            $("#btnRef").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const orderId = path.split('/')[2];
+                const quantity = $('.quantity-input').val(); //获取商品数量
+                const tap = 2 //代表拒绝
+                const url = `/order/${orderId}/deal/`;
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: {
+                        quantity: quantity,
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('您已拒绝该订单!');
+                            window.location.href = path;
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}

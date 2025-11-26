@@ -1,0 +1,290 @@
+{% extends 'layout_seller.html' %}
+{% load static %}
+{% block css %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'CSS/product_detail_style.css' %}"> <!-- 引入外部 CSS 文件 -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <!-- 商品主区域 -->
+        <div class="product-main">
+            <!-- 图片轮播 -->
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <img src="{{ MEDIA_URL }}{{ datum.photo }}" alt="商品主图">
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <!-- 商品信息 -->
+            <div class="product-info">
+                <h1 class="product-title">{{ datum.name }}</h1>
+                <div class="price-section">
+                    <span class="current-price">¥{{ datum.price }}</span>
+                    <span class="original-price">¥{{ datum.price_b }}</span>
+                    <div class="promotion-tags">
+                        <span class="tag">优惠条件1</span>
+                        <span class="tag">优惠条件2</span>
+                    </div>
+                </div>
+
+                <!-- 商品参数 -->
+                <div class="specs">
+                    <div class="spec-item">
+                        <span>类型标签：</span>
+                        <strong>{{ datum.get_label_display }}</strong>
+                    </div>
+                    <div class="spec-item">
+                        <span>库存：</span>
+                        <strong class="stock">{{ datum.stock }}</strong>
+                    </div>
+                </div>
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    {% if datum.putaway_state == 1 %} <!-- 默认下架 -->
+                        <button class="btn btn-cart" id="btnPut0">上架该商品</button>
+                        <button class="btn btn-buy" id="btnDel">删除该商品</button>
+                    {% else %}
+                        <button class="btn btn-cart" id="btnPut1">下架该商品</button>
+                        <button class="btn btn-buy" id="btnDel">删除该商品</button>
+                    {% endif %}
+                    <button class="btn btn-info" id="btnCha">修改信息</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品详情 -->
+        <div class="product-detail">
+            <h2 class="detail-title">商品详情</h2>
+            <div class="rich-text">
+                <!-- 富文本内容 -->
+                <p>{{ datum.detail|safe }}</p>
+            </div>
+            <h2 class="detail-title">更改商品详情</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div>
+                    {{ form_detail.media }}
+                    {{ form_detail.detail }}
+                </div>
+                <button type="submit" class="btn btn-cart" style="padding: 10px;">提 交</button>
+            </form>
+            <div class="comment_post">      {# 提交评论区域的div #}
+                <h3 id="commentform_title">发表评论</h3>
+                <textarea rows="10" cols="60" id="comment_content"></textarea>
+                <p>
+                    <button class="btn btn-info" style="padding: 10px;">提交评论</button>
+                </p>
+            </div>
+
+            <div class="comment_show">      {# 评论展示区域的div #}
+                <h3 class="feedback_area_title">评论列表</h3>
+                <div class="comment_list">
+                    {% for comment in comment_list %}    {# 循环展示评论的数据 #}
+                        <div>
+                            <p>第{{ forloop.counter }}楼 -> By:{{ comment.buyer.username }}
+                                -> {{ comment.created_at }} ->
+                                <button class="reply" style="padding: 5px ; color: #5bc0de"
+                                        username={{ comment.buyer.username }} pk={{ comment.pk }}>回复
+                                </button>
+                            </p>
+                            {# 在此处定义一个回复按钮，用户实现子评论,并且自定义属性username和pk，用于下面回复功能的实现 #}
+                            {% if comment.parent_id %}   {# 判断评论是否有父级评论 #}
+                                <p id="p">原评论内容：{{ comment.parent.content }}</p>
+                                {# 如果有父级评论，则在中间显示父级评论的评论内容 #}
+                            {% endif %}
+                            <p>评论内容：{{ comment.content }}</p>
+                            <hr>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">修改信息</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="formAdd">
+                        <div class="clearfix">
+                            {% for field in form %}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>{{ field.label }}</label>
+                                        {{ field }}
+                                        <span class="error-message" style="color: red"></span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                    <button id="btnSave" type="button" class="btn btn-info">保 存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            bindBtnPut1Event();
+            bindBtnPut0Event();
+            bindBtnDelEvent();
+            bindBtnChaEvent();
+            bindBtnSaveEvent();
+        })
+
+        function bindBtnChaEvent() {
+            $("#btnCha").click(function () {
+                //点击按钮显示对话框
+                $('#myModal').modal('show');
+            });
+        }
+
+        function bindBtnPut0Event() {
+            $("#btnPut0").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const Id = path.split('/')[2];
+                const tap = 0 //代表上架
+                $.ajax({
+                    url: `/commodity/manage/`,
+                    method: 'POST',
+                    data: {
+                        Id: Id,
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('上架成功！');
+                            window.location.href = path;
+                        }
+                    }
+                });
+            })
+        }
+
+        function bindBtnPut1Event() {
+            $("#btnPut1").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const Id = path.split('/')[2];
+                const tap = 1 //代表下架
+                $.ajax({
+                    url: `/commodity/manage/`,
+                    method: 'POST',
+                    data: {
+                        Id: Id,
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('下架成功!');
+                            window.location.href = path;
+                        }
+                    }
+                })
+            })
+        }
+
+        function bindBtnDelEvent() {
+            $("#btnDel").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const Id = path.split('/')[2];
+                const tap = 2 //代表删除
+                $.ajax({
+                    url: `/commodity/manage/`,
+                    method: 'POST',
+                    data: {
+                        Id: Id,
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('删除商品成功!');
+                            window.location.href = '/index/seller/';
+                        }
+                    }
+                })
+            })
+        }
+
+        function bindBtnSaveEvent() {
+            $("#btnSave").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                //清除错误信息
+                $(".error-message").empty();
+                //向后台发送请求
+                $.ajax({
+                    url: "/change/commodityinfo/",
+                    type: "post",
+                    data: $("#formAdd").serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            alert("修改信息成功！");
+                            window.location.href = path;
+                        } else {
+                            $.each(res.error, function (name, errorList) {
+                                $("#id_" + name).next().text(errorList[0]);
+                                {#拼接#}
+                            })
+                        }
+                    }
+                })
+            });
+        }
+    </script>
+    <script>
+        var pid = ""
+        {# 设置一个变量pid默认为空，用于后面作为数据库存储的父级评论的ID，如果没有父级评论则为空，子评论有父级评论 #}
+        {# 提交评论按钮的点击事件 #}
+        $(".comment_post p button").click(function () {
+            $.ajax({
+                url: '/comment/manage/',
+                type: 'post',
+                data: {
+                    comment_content: $("#comment_content").val(), {# 提交的数据内容data #}
+                    commodity_id: {{ datum.id }},
+                    pid: pid
+                },
+                success: function (res) {            {# 本例中返回的数据仅仅用于在控制台打印而已 #}
+                    console.log(res)
+                    {# 控制台打印返回的数据 #}
+                    $("#comment_content").val("")
+                    {# 提交完成后，清空评论输入框的内容 #}
+                    pid = ""
+                    {# 子评论提交完成后，将pid默认设置为空，恢复为默认的父评论 #}
+
+                }
+            })
+        })
+
+
+        {# 回复按钮的点击事件 #}
+        $(".reply").click(function () {
+            $("#comment_content").focus()
+            {# 回复按钮的事件，点击时，将光标聚集到评论输入框中 #}
+            var val = "@" + $(this).attr("username") + "\n"
+            {# $(this)指代".reply"标签本身，获取这个标签的username值 #}
+            $("#comment_content").val(val)
+            {# 回复时，自动在输入框加入：@要回复的人 #}
+            pid = $(this).attr("pk")
+            {# 当点击回复时，父评论ID不再为空，此时修改为：对应评论的主键值ID #}
+        })
+
+    </script>
+{% endblock %}

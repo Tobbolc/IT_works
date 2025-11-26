@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    <style>
+        .account {
+            width: 400px;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            box-shadow: 5px 5px 20px #aaa;
+
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 100px;
+            padding: 20px 40px;
+        }
+
+        .account h2 {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .account .btn-box .btn01 {
+            color: #2b5c93;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 80px;
+            float: right;
+        }
+
+        .account .btn-box .btn02 {
+            color: #2b5c93;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 100px;
+            float: left;
+        }
+
+        .account .btn-box > a:hover {
+            color: white;
+        }
+
+        .account .btn-box {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h2>忘记密码</h2>
+    <form method="post" novalidate="novalidate">
+        {% csrf_token %}
+        {#        <meta name="csrf-token" content="{{ csrf_token }}">#}
+        {% if username %}
+        <div class="form-group">
+            <label>您的用户名是</label>
+            <input type="text" class="form-control" placeholder="{{ username }}" name="username" readonly/>
+        </div>
+        {% elif store_name %}
+            <div class="form-group">
+            <label>您的店铺名是</label>
+            <input type="text" class="form-control" placeholder="{{ store_name }}" name="store_name" readonly/>
+        </div>
+        {% endif %}
+        <p style="display: inline-block; max-width: 100%; margin-top: 35px; margin-bottom: 5px;font-weight: 700;">
+            提示信息</p>
+        <p style=" margin-bottom: 35px">
+            您在注册时输入的邮箱为{{ email }}，我们已经向您的邮箱发送了一篇验证邮件，请注意查收</p>
+        <div class="form-group">
+            <label for="id_code">邮箱验证码</label>
+            <div class="row">
+                <div class="col-xs-12">
+                    {{ form.code }}
+                    <span style="color: red">{{ form.code.errors.0 }}</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px" class="btn-box">
+            </div>
+        </div>
+        <input type="submit" value="验 证" class="btn btn-primary" style="margin-left: 120px">
+    </form>
+</div>
+
+<script src="{% static 'JS/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+
+
+</body>
+</html>

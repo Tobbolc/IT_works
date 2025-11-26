@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    <style>
+        .account {
+            width: 400px;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            box-shadow: 5px 5px 20px #aaa;
+
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 100px;
+            padding: 20px 40px;
+        }
+
+        .account h2 {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .account .btn-box .btn01{
+            color: #2b5c93;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 80px;
+            float: right;
+        }
+
+        .account .btn-box .btn02 {
+            color: #2b5c93;
+            transition: 0.2s;
+            text-decoration: none;
+            width: 100px;
+            float: left;
+        }
+
+        .account .btn-box > a:hover {
+            color: white;
+        }
+
+        .account .btn-box {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h2>买家登录</h2>
+    <form method="post" novalidate="novalidate">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>用户名</label>
+            {{ form.username }}
+            <span style="color: red">{{ form.username.errors.0 }}</span>
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            {{ form.password }}
+            <span style="color: red">{{ form.password.errors.0 }}</span>
+        </div>
+        <div class="form-group">
+            <label for="id_code">图片验证码</label>
+            <div class="row">
+                <div class="col-xs-7">
+                    {{ form.code }}
+                    <span style="color: red">{{ form.code.errors.0 }}</span>
+                </div>
+                <div class="col-xs-5">
+                    <img src="/image/code/" id="image_code" style="width: 100px;height: 30px;"/>
+                </div>
+            </div>
+            <div style="margin-top: 10px" class="btn-box">
+                <a href="/forget/pwd/" class="btn01">忘记密码？</a>
+                <a href="#" class="btn02">邮箱验证码登录</a>
+            </div>
+        </div>
+        <input type="submit" value="登 录" class="btn btn-primary">
+        <a href="/register/buyer/">还未注册？</a>
+    </form>
+
+</div>
+</body>
+</html>

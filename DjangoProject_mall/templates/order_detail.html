@@ -1,0 +1,190 @@
+{% extends 'layout_buyer.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'CSS/order_detail_style.css' %}"> <!-- 引入外部 CSS 文件 -->
+{% endblock %}
+{% block content %}
+    <div class="order-container">
+        <!-- 订单头信息 -->
+        <div class="order-header">
+            <h1 class="order-number">订单号：{{ order_id }}</h1>
+            <div class="order-meta">
+                <div>创建时间：{{ now }}</div>
+                {% if flag == 0 %}
+                    <div>状态：<span class="status-tag status-unsubmitted">还未提交</span></div>
+                {% elif flag == 1 %}
+                    <div>状态：<span class="status-tag status-processing">处理中</span></div>
+                {% elif flag == 2 %}
+                    <div>状态：<span class="status-tag status-refused">已拒绝</span></div>
+                {% else %}
+                    <div>状态：<span class="status-tag status-completed">已通过</span></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <table class="order-items">
+            <thead>
+            <tr>
+                <th>商品信息</th>
+                <th>单价</th>
+                <th>数量</th>
+                <th>小计</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in commodity %}
+                <tr data-product-id="{{ item.id }}">
+                    <td data-label="商品信息">
+                        <img src="{{ MEDIA_URL }}{{ item.photo }}" class="product-image" alt="{{ item.name }}">
+                        <span class="product-name">{{ item.name }}</span>
+                    </td>
+                    <td data-label="单价">¥{{ item.price }}</td>
+                    <td data-label="数量">
+                        <div class="quantity-wrapper">
+                            <button class="quantity-btn minus-btn">-</button>
+                            <input type="number" class="quantity-input"
+                                   value="1"
+                                   min="1"
+                                   max="{{ item.stock }}">
+                            <button class="quantity-btn plus-btn">+</button>
+                        </div>
+
+                    </td>
+                    <td data-label="小计" class="subtotal">¥{{ item.subtotal }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 金额汇总 -->
+        <div class="total-section">
+            <div class="total-amount">总金额：¥{{ order.total }}</div>
+        </div>
+        <!--操作按钮-->
+        <div class="action-buttons">
+            {% if flag == 0 %}
+                <a class="btn btn-secondary" href="/index/buyer/">继续购物</a>
+                <button class="btn btn-primary" id="btnSub">提交订单</button>
+            {% elif flag == 1 %}
+                <button class="btn btn-primary" id="btnDel">取消订单</button>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            bindBtnSubEvent();
+            bindBtnDelEvent();
+        })
+        $(document).ready(function () {
+            // 初始化总价
+            updateTotal();
+
+            // 数量加减按钮点击事件
+            $('.quantity-btn').click(function () {
+                const $input = $(this).siblings('.quantity-input');
+                const step = $(this).hasClass('plus-btn') ? 1 : -1;
+                updateQuantity($input, step);
+            });
+
+            // 输入框变化事件
+            $('.quantity-input').change(function () {
+                validateQuantity($(this));
+                updateTotal();
+                saveQuantityChange($(this));
+            });
+
+            // 更新数量函数
+            function updateQuantity($input, step) {
+                let value = parseInt($input.val()) + step;
+                const max = parseInt($input.attr('max'));
+                const min = parseInt($input.attr('min'));
+
+                value = Math.max(min, Math.min(value, max));
+                $input.val(value).trigger('change');
+            }
+
+            // 验证数量范围
+            function validateQuantity($input) {
+                let value = parseInt($input.val());
+                const max = parseInt($input.attr('max'));
+                const min = parseInt($input.attr('min'));
+
+                if (isNaN(value)) value = min;
+                value = Math.max(min, Math.min(value, max));
+                $input.val(value);
+            }
+
+            // 更新总价
+            function updateTotal() {
+                let total = 0;
+                $('tr[data-product-id]').each(function () {
+                    const price = parseFloat($(this).find('td:eq(1)').text().replace('¥', ''));
+                    const quantity = parseInt($(this).find('.quantity-input').val());
+                    const subtotal = price * quantity;
+                    $(this).find('.subtotal').text('¥' + subtotal.toFixed(2));
+                    total += subtotal;
+                });
+                $('.total-amount').text('总金额：¥' + total.toFixed(2));
+            }
+
+
+        });
+
+        function bindBtnSubEvent() {
+            $("#btnSub").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const productId = path.split('/')[2]; // 提取商品 ID（假设 URL 格式为 /commodity/42/detail/）
+                const quantity = $('.quantity-input').val(); //获取商品数量
+                const tap = 1 //代表提交订单
+                $.ajax({
+                    url: '/order/deal/',
+                    method: 'POST',
+                    data: {
+                        quantity: quantity,
+                        product_id: productId, // 传递商品 ID
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('创建订单成功!可以在您的历史订单中查看进度');
+                            window.location.href = path;
+                        } else {
+                            alert('余额不足，请及时充值')
+                            window.location.href = path;
+                        }
+                    }
+                });
+            })
+        }
+
+        function bindBtnDelEvent() {
+            $("#btnDel").click(function () {
+                const path = window.location.pathname; // 获取当前 URL 路径
+                const productId = path.split('/')[2]; // 提取商品 ID（假设 URL 格式为 /commodity/42/detail/）
+                const quantity = $('.quantity-input').val(); //获取商品数量
+                const tap = 2 //代表取消订单
+                $.ajax({
+                    url: '/order/deal/',
+                    method: 'POST',
+                    data: {
+                        quantity: quantity,
+                        product_id: productId, // 传递商品 ID
+                        tap: tap
+                        {#csrfmiddlewaretoken: '{{ csrf_token }}' // Django CSRF 令牌#}
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            alert('取消订单成功!');
+                            window.location.href = path;
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}

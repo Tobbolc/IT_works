@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">新建盲盒</h3>
+            </div>
+            <div style="margin-inline: 10px" class="panel-body">
+                <form method="post" novalidate="novalidate">
+                    {% csrf_token %}
+                    {% for item in form %}
+                        <div class="form-group">
+                            <label>{{ item.label }}</label>
+                            {{ item }}
+                            <span style="color: red">{{ item.errors.0 }}</span>
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">提 交</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugins/bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <script>
+        $(function () {
+            $('#id_created_at').datepicker({
+                format: 'yyyy-mm-dd',
+                language: 'zh-CN',
+                autoclose: true,
+                startDate: '+0d',
+            })
+        })
+    </script>
+{% endblock %}

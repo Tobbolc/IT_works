@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单详情</title>
+    <!-- 引入jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .order-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+        }
+
+        /* 订单头信息 */
+        .order-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .order-number {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin: 0 0 10px;
+        }
+
+        /* 状态标签样式 */
+        .status-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .status-processing { background: #fff3e0; color: #ff6f00; }
+        .status-shipped { background: #e3f2fd; color: #1976d2; }
+        .status-completed { background: #e8f5e9; color: #43a047; }
+
+        /* 商品表格 */
+        .order-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+        .order-items th {
+            text-align: left;
+            padding: 15px;
+            background: #f5f5f5;
+            color: #666;
+            border-bottom: 2px solid #eee;
+        }
+        .order-items td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 商品图片 */
+        .product-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        /* 数量选择器 */
+        .quantity-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        .quantity-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        /* 金额汇总 */
+        .total-section {
+            text-align: right;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        .total-amount {
+            font-size: 20px;
+            color: #e53935;
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .order-items td {
+                display: block;
+                text-align: right;
+            }
+            .order-items td::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="order-container">
+        <!-- 订单头信息 -->
+        <div class="order-header">
+            <h1 class="order-number">订单号：{{ order.order_number }}</h1>
+            <div class="order-meta">
+                <div>创建时间：{{ order.created_at }}</div>
+                <div>状态：<span class="status-tag status-{{ order.status }}">{{ order.get_status_display }}</span></div>
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <table class="order-items">
+            <thead>
+                <tr>
+                    <th>商品信息</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>小计</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr data-product-id="{{ item.product_id }}">
+                    <td data-label="商品信息">
+                        <img src="{{ item.image }}" class="product-image" alt="{{ item.name }}">
+                        <span class="product-name">{{ item.name }}</span>
+                    </td>
+                    <td data-label="单价">¥{{ item.price }}</td>
+                    <td data-label="数量">
+                        <div class="quantity-wrapper">
+                            <button class="quantity-btn minus-btn">-</button>
+                            <input type="number" class="quantity-input"
+                                   value="{{ item.quantity }}"
+                                   min="1"
+                                   max="{{ item.stock }}">
+                            <button class="quantity-btn plus-btn">+</button>
+                        </div>
+                    </td>
+                    <td data-label="小计" class="subtotal">¥{{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 金额汇总 -->
+        <div class="total-section">
+            <div class="total-amount">总金额：¥{{ order.total }}</div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 初始化总价
+            updateTotal();
+
+            // 数量加减按钮点击事件
+            $('.quantity-btn').click(function() {
+                const $input = $(this).siblings('.quantity-input');
+                const step = $(this).hasClass('plus-btn') ? 1 : -1;
+                updateQuantity($input, step);
+            });
+
+            // 输入框变化事件
+            $('.quantity-input').change(function() {
+                validateQuantity($(this));
+                updateTotal();
+                saveQuantityChange($(this));
+            });
+
+            // 更新数量函数
+            function updateQuantity($input, step) {
+                let value = parseInt($input.val()) + step;
+                const max = parseInt($input.attr('max'));
+                const min = parseInt($input.attr('min'));
+
+                value = Math.max(min, Math.min(value, max));
+                $input.val(value).trigger('change');
+            }
+
+            // 验证数量范围
+            function validateQuantity($input) {
+                let value = parseInt($input.val());
+                const max = parseInt($input.attr('max'));
+                const min = parseInt($input.attr('min'));
+
+                if (isNaN(value)) value = min;
+                value = Math.max(min, Math.min(value, max));
+                $input.val(value);
+            }
+
+            // 更新总价
+            function updateTotal() {
+                let total = 0;
+                $('tr[data-product-id]').each(function() {
+                    const price = parseFloat($(this).find('td:eq(1)').text().replace('¥', ''));
+                    const quantity = parseInt($(this).find('.quantity-input').val());
+                    const subtotal = price * quantity;
+                    $(this).find('.subtotal').text('¥' + subtotal.toFixed(2));
+                    total += subtotal;
+                });
+                $('.total-amount').text('总金额：¥' + total.toFixed(2));
+            }
+
+            // 保存数量修改到后端
+            function saveQuantityChange($input) {
+                const productId = $input.closest('tr').data('product-id');
+                const newQuantity = $input.val();
+
+                $.ajax({
+                    url: '/update_quantity/',
+                    method: 'POST',
+                    data: {
+                        product_id: productId,
+                        quantity: newQuantity,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (!response.success) {
+                            alert('保存失败：' + response.error);
+                        }
+                    },
+                    error: function() {
+                        alert('网络错误，请重试');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

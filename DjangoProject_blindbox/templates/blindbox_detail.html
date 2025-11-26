@@ -1,0 +1,105 @@
+{% extends 'layout.html' %}
+
+{% block css %}
+    <style>
+        .card {
+            border: 1px solid #ccc; /* 添加外边框 */
+            margin-bottom: 20px; /* 卡片之间的间隔 */
+            box-shadow: 5px 5px 20px #aaa; /* 添加阴影效果 */
+            border-radius: 10px;
+        }
+
+        .card-body {
+            padding: 15px; /* 增加卡片内部的填充 */
+        }
+
+        .card-title {
+            font-weight: bold; /* 标题加粗 */
+            color: #333; /* 标题颜色 */
+        }
+
+        .card-text {
+            color: #666; /* 文本颜色 */
+        }
+
+        .container1 {
+            display: flex; /*flexbox布局*/
+            justify-content: space-between; /*主轴上两端对齐 */
+            flex-wrap: wrap; /*必要时换行*/
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h3><span class="glyphicon glyphicon-list-alt" aria-hidden="true">盲盒详情</span></h3>
+        <a href="/blindbox/{{ id_up }}/detail/" class="btn btn-primary btn-xs"
+           style="width: 80px; height: 30px; margin-bottom: 10px; display:flex; justify-content: center; align-items: center;">上一页</a>
+        <div class="row">
+            {% for item in row_objects %}
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="card-text">姓名：{{ item.name }}</p>
+                            <p class="card-text">年龄：{{ item.age }}</p>
+                            <p class="card-text">性别：{{ item.get_gender_display }}</p>
+                            <p class="card-text">联系方式：{{ item.contact }}</p>
+                            <p class="card-text">邮箱：{{ item.email }}</p>
+                            <p class="card-text">住址：{{ item.address }}</p>
+                            <p class="card-text">个人简介：{{ item.introduction }}</p>
+                            <p class="card-text">择偶需求：{{ item.demand }}</p>
+                            <p class="card-text">创建时间：{{ item.created_at }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="/blindbox/{{ id_down }}/detail/" class="btn btn-primary btn-xs"
+           style="width: 80px; height: 30px; display:grid; place-items: center">下一页</a>
+        <h3><span class="glyphicon glyphicon-comment" aria-hidden="true">评论({{ comment_count }})</span></h3>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <label style="margin-left: 2px">历史评论</label>
+                        <div class="container1">
+                            {% if datalist %}
+                                {% for item in datalist %}
+                                    <div class="col-md-6">
+                                        <p class="data1">{{ item.content }}</p>
+                                    </div>
+                                    {% if item.user.username == user_now %}
+                                        <div class="col-md-6" style="margin-left: auto">
+                                            <p style="margin-left: 100px" class="data2">{{ item.created_at }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ item.user.username }}<a href="/blindbox/comment/delete/?nid={{ item.id }}" style="margin-left: 50px" class="btn btn-danger btn-xs">删除</a></p>
+
+                                        </div>
+                                    {% else %}
+                                        <div class="col-md-6" style="margin-left: auto">
+                                            <p style="margin-left: 100px" class="data2">{{ item.created_at }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ item.user.username }}</p>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p style="margin-left: 2px">暂无评论</p>
+                            {% endif %}
+
+                        </div>
+                        <form class="form-horizontal" method="post">
+                            {% csrf_token %}
+                            <div class="form-group" style="margin-left: 3px">
+                                <label>内容</label>
+                                <input type="text" class="form-control" placeholder="说点什么..." name="content"
+                                       style=" max-width: 1095px"/>
+                            </div>
+                            <button type="submit" class="btn btn-primary">评 论</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

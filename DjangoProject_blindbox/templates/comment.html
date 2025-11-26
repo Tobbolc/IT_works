@@ -1,0 +1,101 @@
+<script src="/static/ckeditor/ckeditor/ckeditor-init.js"></script>
+<script src="/static/ckeditor/ckeditor/ckeditor/ckeditor.js"></script>
+
+{% block content %}
+    <div class="left">
+        <form method="post" action="/">
+            {% csrf_token %}
+            {{ form.as_p }}
+        </form>
+        <hr>
+        <input style="float:right" type="submit" value="发布！" class="button">
+        <button type="button" style="float: right" value="发布" data-mce-placeholder="sss" class="btn-primary"></button>
+    </div>
+    <div id="comments" class="comment-area">
+        <h2><i style="padding-right: 0.3em" class="fa fa-comments"></i>评论</h2>
+
+        <p class="no-comments-message">目前没有评论。</p>
+
+
+        <div id="new-comment" class="form-area comment-submit">
+            <h3>新评论</h3>
+            <hr>
+            <form class="comment-submit-form" action="" method="post">
+                <input type="hidden" name="csrfmiddlewaretoken"
+                       value="CjVrPkok3Odw0WK6MMtqVtSRt9Hddc4FDPo12hSRpkZzCipR67Nzh0TuDoCKaQSC"> <input type="hidden"
+                                                                                                        name="parent"
+                                                                                                        id="id_parent">
+                <div class="comment-post-wrapper">
+                    <div id="comment-form-body">
+                        <div id="id_body-wmd-wrapper" class="wmd-wrapper">
+                            <div class="wmd-panel">
+                                <div id="id_body_wmd_button_bar">
+                                    <ul id="wmd-button-row" class="wmd-button-row">
+                                        <li class="wmd-button" id="wmd-bold-button" title="Strong <strong> Ctrl+B"
+                                            style="left: 0px;"><span style="background-position: 0px 0px;"></span></li>
+                                        <li class="wmd-button" id="wmd-italic-button" title="Emphasis <em> Ctrl+I"
+                                            style="left: 25px;"><span style="background-position: -20px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-spacer wmd-spacer1" id="wmd-spacer1"></li>
+                                        <li class="wmd-button" id="wmd-latex-button" title="Latex embed - Ctrl+M"
+                                            style="left: 75px;"><span style="background-position: -40px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-button" id="wmd-latex-button-display"
+                                            title="Latex display embed - Ctrl+Space" style="left: 100px;"><span
+                                                style="background-position: -60px 0px;"></span></li>
+                                        <li class="wmd-spacer wmd-spacer2" id="wmd-spacer2"></li>
+                                        <li class="wmd-button" id="wmd-link-button" title="Hyperlink <a> Ctrl+L"
+                                            style="left: 150px;"><span style="background-position: -80px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-button" id="wmd-user-reference-button" title="User reference"
+                                            style="left: 175px;"><span style="background-position: -100px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-button" id="wmd-quote-button"
+                                            title="Blockquote <blockquote> Ctrl+Q" style="left: 200px;"><span
+                                                style="background-position: -120px 0px;"></span></li>
+                                        <li class="wmd-button" id="wmd-code-button"
+                                            title="Code Sample <pre><code> Ctrl+K" style="left: 225px;"><span
+                                                style="background-position: -140px 0px;"></span></li>
+                                        <li class="wmd-button" id="wmd-image-button" title="Image <img> Ctrl+G"
+                                            style="left: 250px;"><span style="background-position: -160px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-spacer wmd-spacer3" id="wmd-spacer3"></li>
+                                        <li class="wmd-button" id="wmd-olist-button" title="Numbered List <ol> Ctrl+O"
+                                            style="left: 300px;"><span style="background-position: -180px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-button" id="wmd-ulist-button" title="Bulleted List <ul> Ctrl+U"
+                                            style="left: 325px;"><span style="background-position: -200px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-button" id="wmd-heading-button" title="Heading <h1>/<h2> Ctrl+H"
+                                            style="left: 350px;"><span style="background-position: -220px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-button" id="wmd-hr-button" title="Horizontal Rule <hr> Ctrl+R"
+                                            style="left: 375px;"><span style="background-position: -240px 0px;"></span>
+                                        </li>
+                                        <li class="wmd-spacer wmd-spacer3" id="wmd-spacer3"></li>
+                                        <li class="wmd-button" id="wmd-undo-button" title="Undo - Ctrl+Z"
+                                            style="left: 425px;"><span
+                                                style="background-position: -260px -20px;"></span></li>
+                                        <li class="wmd-button" id="wmd-redo-button" title="Redo - Ctrl+Y"
+                                            style="left: 450px;"><span
+                                                style="background-position: -280px -20px;"></span></li>
+                                    </ul>
+                                </div>
+                                <textarea class=" wmd-input" id="id_body" name="body" required=""></textarea>
+                            </div>
+
+                            <div id="id_body-preview" data-preview-url="/haima/widgets/preview/comment"
+                                 data-textarea-id="id_body" data-timeout="1000"
+                                 class="wmd-panel wmd-preview dmmd-preview dmmd-no-button">
+                                <div class="dmmd-preview-update"><i class="fa fa-refresh"></i> 更新预览</div>
+                                <div class="dmmd-preview-content content-description"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <input style="float:right" type="submit" value="发布！" class="button">
+            </form>
+        </div>
+    </div>
+{% endblock %}

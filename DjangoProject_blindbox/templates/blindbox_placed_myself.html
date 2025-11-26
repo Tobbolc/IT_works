@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}
+
+{% block css %}
+    <style>
+        .card {
+            border: 1px solid #ccc; /* 添加外边框 */
+            margin-bottom: 20px; /* 卡片之间的间隔 */
+            box-shadow: 5px 5px 20px #aaa; /* 添加阴影效果 */
+            border-radius: 10px;
+        }
+
+        .card-body {
+            padding: 15px; /* 增加卡片内部的填充 */
+        }
+
+        .card-title {
+            font-weight: bold; /* 标题加粗 */
+            color: #333; /* 标题颜色 */
+        }
+
+        .card-text {
+            color: #666; /* 文本颜色 */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="jumbotron">
+            <p>这里是当前用户{{ user }}所创建的所有盲盒</p>
+            <p><a class="btn btn-success btn-lg" style="margin-bottom: 20px" href="/blindbox/add/">
+                <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                新建盲盒
+            </a>
+                <a class="btn btn-primary btn-lg" style="margin-bottom: 20px" href="/random/chose/">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    抽取盲盒
+                </a>
+            </p>
+        </div>
+        <div class="row">
+            {% for item in datalist %}
+                <div class="col-md-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">用户：{{ item.user.username }}</h5>
+                            <p class="card-text">姓名：{{ item.name }}</p>
+                            <p class="card-text">年龄：{{ item.age }}</p>
+                            <p class="card-text">简介：{{ item.introduction }}</p>
+                            <a href="/blindbox/{{ item.id }}/detail/" class="btn btn-primary btn-xs">详 情</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="clearfix">
+            <ul class="pagination">
+                {{ page_string }}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

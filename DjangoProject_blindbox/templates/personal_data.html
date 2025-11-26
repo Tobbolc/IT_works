@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container">
+    <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>用户名：</label>
+    <input type="text" class="form-control" placeholder="标题" name="username"  value="{{ data.username }}" readonly/>
+    <label>密码：</label>
+    <input type="text" class="form-control" placeholder="标题" name="password"  value="{{ data.password }}" readonly/>
+    <label>邮箱：</label>
+    <input type="text" class="form-control" placeholder="标题" name="email"  value="{{ data.email }}" readonly/>
+    {{ form.as_p }}
+    <button type="submit" style="margin-top: 10px; margin-bottom: 10px" class="btn-primary">上 传</button>
+    </form>
+    <img src="{{ MEDIA_URL }}{{ data.avatar }}" alt="" style="width: 50px; height: 50px; border-radius: 25px">
+</div>
+
+{% endblock %}

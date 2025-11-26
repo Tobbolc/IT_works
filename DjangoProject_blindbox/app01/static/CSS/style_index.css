@@ -1,0 +1,86 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Libre Baskerville', serif;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.bg {
+    background: url("../img/pg3.png") no-repeat;
+    height: 100%;
+    background-size: cover;
+    position: relative;
+}
+
+.context{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.context h1{
+    font-family: 'Exo 2', sans-serif;
+    font-size: 3.5rem;
+    /* 设置文字的基本样式 */
+    font-weight: bold;
+      /* 使用线性渐变作为背景 */
+    background: linear-gradient(to right,#9acfea 0%, #e4b9c0 100%);
+      /* 将背景裁剪到文字上 */
+    -webkit-background-clip: text;
+    background-clip: text;
+      /* 设置文字颜色为透明，以便背景可以显示 */
+    color: transparent;
+      /* 设置一些额外的样式，例如行高和文本阴影，以增强可读性 */
+    line-height: 1.2;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+}
+.nav-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+.nav-button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: #dca7a7;
+    background-image: linear-gradient(to right, #9acfea 0%, #e4b9c0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-image 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+.nav-button:hover {
+    transform: scale(1.1);
+    background-image: linear-gradient(to right, #dca7a7 0%, #e4b9c0 100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    color: #333;
+}
+.center-button {
+    bottom: 30%;
+    position: absolute;
+    left: 45%;
+    padding: 10px 20px;
+    background-color: #dca7a7;
+    background-image: linear-gradient(to right, #9acfea 0%, #e4b9c0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-image 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+.center-button:hover {
+    transform: scale(1.1);
+    background-image: linear-gradient(to right, #dca7a7 0%, #e4b9c0 100%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    color: #333;
+}
